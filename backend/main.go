@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,17 +26,15 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.POST("quiz", func(c *gin.Context) {
-		quiz := Quiz{Title: "sampleQuiz",
-			Questions: []Question{
-				Question{
-					Question: "sample question",
-					Options: []string{
-						"optionA", "optionA", "optionA", "optionA",
-					},
-					Answer: 0,
-				},
-			},
+		var quiz Quiz
+
+		// Call BindJSON to bind the received JSON to
+		// newAlbum.
+		if err := c.BindJSON(&quiz); err != nil {
+			fmt.Println("ERROR WHILE PARSING QUIZ DURING CREATION")
+			return
 		}
+
 		id, er := uuid.NewRandom()
 		if er != nil {
 			panic(er)
