@@ -5,23 +5,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	// "github.com/aws/aws-sdk-go-v2/aws"
 	// "github.com/aws/aws-sdk-go-v2/config"
 	// "github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	// model "quizy/model"
+	. "quizy/model"
 )
-
-type Question struct {
-	Question string   `json:"question"`
-	Options  []string `json:"options"`
-	Answer   int      `json:"answer"`
-}
-
-type Quiz struct {
-	Title     string     `json:"title"`
-	Questions []Question `json:"questions"`
-}
-type UUID = uuid.UUID
 
 var db = make(map[string]Quiz)
 
@@ -36,7 +25,17 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.POST("quiz", func(c *gin.Context) {
-		quiz := Quiz{Title: "sampleQuiz", Questions: []Question{Question{Question: "sample question", Options: []string{"optionA", "optionA", "optionA", "optionA"}, Answer: 0}}}
+		quiz := Quiz{Title: "sampleQuiz",
+			Questions: []Question{
+				Question{
+					Question: "sample question",
+					Options: []string{
+						"optionA", "optionA", "optionA", "optionA",
+					},
+					Answer: 0,
+				},
+			},
+		}
 		id, er := uuid.NewRandom()
 		if er != nil {
 			panic(er)
