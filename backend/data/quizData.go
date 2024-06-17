@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"log"
 	. "quizy/model"
 
@@ -15,9 +16,13 @@ type TableBasics struct {
 	TableName      string
 }
 
+// IS CLASSED AT THE START OF THE PROGRAM
 var dbClient = newclient()
 
+var tableName = "quizy_quiz"
+
 func newclient() *dynamodb.DynamoDB {
+	fmt.Println("CREATING DB CLIENT")
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
 	}))
@@ -32,8 +37,6 @@ func AddQuiz(quiz Quiz) {
 		log.Fatalf("Got error marshalling new movie item: %s", err)
 	}
 
-	tableName := "quizy_quiz"
-
 	input := &dynamodb.PutItemInput{
 		Item:      av,
 		TableName: aws.String(tableName),
@@ -45,20 +48,57 @@ func AddQuiz(quiz Quiz) {
 	}
 }
 
-// func GetItem() {
-// 	result, err := dbClient.GetItem(&dynamodb.GetItemInput{
-// 		TableName: aws.String("quizy_quiz"),
-// 		Key: map[string]*dynamodb.AttributeValue{
-// 			"quizId": {
-// 				N: aws.String("sample1"),
-// 			},
-// 			"title": {
-// 				S: aws.String("movieName"),
-// 			},
-// 		},
-// 	})
-// 	if err != nil {
-// 		log.Fatalf("Got error calling GetItem: %s", err)
-// 	}
-// 	fmt.Println(result)
-// }
+// TODO: Add pagination
+func GetAllQuiz() []Quiz {
+	params := &dynamodb.ScanInput{
+		TableName: aws.String(tableName),
+	}
+
+	result, err := dbClient.Scan(params)
+	if err != nil {
+		log.Fatalf("Query API call failed: %s", err)
+	}
+
+	quizList := []Quiz{}
+
+	for _, i := range result.Items {
+		quiz := Quiz{}
+		err = dynamodbattribute.UnmarshalMap(i, &quiz)
+
+		if err != nil {
+			fmt.Println(i)
+			log.Fatalf("Got error unmarshalling: %s", err)
+		}
+		quizList = append(quizList, quiz)
+	}
+
+	return quizList
+}
+
+func GetQuiz(quizId string) Quiz {
+	result, err := dbClient.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"quizId": {
+				S: aws.String(quizId),
+			},
+		},
+	})
+	if err != nil {
+		log.Fatalf("Got error calling GetItem: %s", err)
+	}
+	if result.Item == nil {
+		msg := "Could not find '" + quizId + "'"
+		log.Fatalln(msg)
+	}
+
+	quiz := Quiz{}
+
+	err = dynamodbattribute.UnmarshalMap(result.Item, &quiz)
+	if err != nil {
+		log.Fatalf("Failed to unmarshal Record, %v", err)
+	}
+
+	return quiz
+
+}

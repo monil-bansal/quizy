@@ -7,11 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	"quizy/data"
-	"quizy/model"
+	. "quizy/data"
+	. "quizy/model"
 )
 
-var db = make(map[string]model.Quiz)
+var db = make(map[string]Quiz)
 
 func setupRouter() *gin.Engine {
 	// Disable Console Color
@@ -26,7 +26,7 @@ func setupRouter() *gin.Engine {
 	})
 
 	r.POST("quiz", func(c *gin.Context) {
-		var quiz model.Quiz
+		var quiz Quiz
 
 		// Call BindJSON to bind the received JSON to
 		// newAlbum.
@@ -40,25 +40,22 @@ func setupRouter() *gin.Engine {
 		}
 		quiz.QuizId = id.String()
 
-		data.AddQuiz(quiz)
+		AddQuiz(quiz)
 		c.String(http.StatusOK, "ok")
 	})
 
 	// Get quiz list
 	r.GET("/quiz", func(c *gin.Context) {
-		// GetItem()
-		c.JSON(http.StatusOK, db)
+		quizList := GetAllQuiz()
+		c.JSON(http.StatusOK, quizList)
 	})
 
 	// Get user value
 	r.GET("/quiz/:quizId", func(c *gin.Context) {
-		quizId := c.Params.ByName("name")
-		value, ok := db[quizId]
-		if ok {
-			c.JSON(http.StatusOK, gin.H{"quiz": quizId, "value": value})
-		} else {
-			c.JSON(http.StatusOK, gin.H{"quiz": quizId, "status": "no value"})
-		}
+		quizId := c.Params.ByName("quizId")
+		fmt.Println(quizId)
+		quiz := GetQuiz(quizId)
+		c.JSON(http.StatusOK, quiz)
 	})
 
 	// Authorized group (uses gin.BasicAuth() middleware)
