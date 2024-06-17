@@ -8,6 +8,7 @@ type Question struct {
 }
 
 type Quiz struct {
-	Title     string     `json:"title"`
-	Questions []Question `json:"questions"`
+	QuizId    string     `dynamodbav:"quizId"`
+	Title     string     `json:"title" dynamodbav:"title"`
+	Questions []Question `json:"questions" dynamodbav:"questions"`
 }

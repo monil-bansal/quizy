@@ -7,13 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
-	// "github.com/aws/aws-sdk-go-v2/aws"
-	// "github.com/aws/aws-sdk-go-v2/config"
-	// "github.com/aws/aws-sdk-go-v2/service/dynamodb"
-	. "quizy/model"
+	"quizy/data"
+	"quizy/model"
 )
 
-var db = make(map[string]Quiz)
+var db = make(map[string]model.Quiz)
 
 func setupRouter() *gin.Engine {
 	// Disable Console Color
@@ -22,11 +20,13 @@ func setupRouter() *gin.Engine {
 
 	// Ping test
 	r.GET("/ping", func(c *gin.Context) {
+		fmt.Println(" I AM HERE")
+		// log.Fatal("HI MONIL")
 		c.String(http.StatusOK, "pong")
 	})
 
 	r.POST("quiz", func(c *gin.Context) {
-		var quiz Quiz
+		var quiz model.Quiz
 
 		// Call BindJSON to bind the received JSON to
 		// newAlbum.
@@ -34,17 +34,19 @@ func setupRouter() *gin.Engine {
 			fmt.Println("ERROR WHILE PARSING QUIZ DURING CREATION")
 			return
 		}
-
 		id, er := uuid.NewRandom()
 		if er != nil {
 			panic(er)
 		}
-		db[id.String()] = quiz
+		quiz.QuizId = id.String()
+
+		data.AddQuiz(quiz)
 		c.String(http.StatusOK, "ok")
 	})
 
 	// Get quiz list
 	r.GET("/quiz", func(c *gin.Context) {
+		// GetItem()
 		c.JSON(http.StatusOK, db)
 	})
 
