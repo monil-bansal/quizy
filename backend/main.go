@@ -46,7 +46,7 @@ func setupRouter() *gin.Engine {
 
 	// Get quiz list
 	r.GET("/quiz", func(c *gin.Context) {
-		quizList := GetAllQuiz()
+		quizList := GetAllQuiz(true /* invalidateAnswer */)
 		c.JSON(http.StatusOK, quizList)
 	})
 
@@ -54,7 +54,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/quiz/:quizId", func(c *gin.Context) {
 		quizId := c.Params.ByName("quizId")
 		fmt.Println(quizId)
-		quiz := GetQuiz(quizId)
+		quiz := GetQuiz(quizId, true /* invalidateAnswer */)
 		c.JSON(http.StatusOK, quiz)
 	})
 

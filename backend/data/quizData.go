@@ -49,7 +49,7 @@ func AddQuiz(quiz Quiz) {
 }
 
 // TODO: Add pagination
-func GetAllQuiz() []Quiz {
+func GetAllQuiz(invalidateAnswer bool) []Quiz {
 	params := &dynamodb.ScanInput{
 		TableName: aws.String(tableName),
 	}
@@ -69,13 +69,18 @@ func GetAllQuiz() []Quiz {
 			fmt.Println(i)
 			log.Fatalf("Got error unmarshalling: %s", err)
 		}
+
+		if invalidateAnswer {
+			quiz = removeAnswer(quiz)
+		}
+
 		quizList = append(quizList, quiz)
 	}
 
 	return quizList
 }
 
-func GetQuiz(quizId string) Quiz {
+func GetQuiz(quizId string, invalidateAnswer bool) Quiz {
 	result, err := dbClient.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -99,6 +104,20 @@ func GetQuiz(quizId string) Quiz {
 		log.Fatalf("Failed to unmarshal Record, %v", err)
 	}
 
+	if invalidateAnswer {
+		quiz = removeAnswer(quiz)
+	}
+
 	return quiz
 
+}
+
+func removeAnswer(quiz Quiz) Quiz {
+	questions := []Question{}
+	for _, j := range quiz.Questions {
+		j.Answer = -1
+		questions = append(questions, j)
+	}
+	quiz.Questions = questions
+	return quiz
 }
