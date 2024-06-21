@@ -11,8 +11,6 @@ import (
 	. "quizy/model"
 )
 
-var db = make(map[string]Quiz)
-
 func setupRouter() *gin.Engine {
 	// Disable Console Color
 	// gin.DisableConsoleColor()
@@ -53,18 +51,50 @@ func setupRouter() *gin.Engine {
 	// Get user value
 	r.GET("/quiz/:quizId", func(c *gin.Context) {
 		quizId := c.Params.ByName("quizId")
-		fmt.Println(quizId)
 		quiz := GetQuiz(quizId, true /* invalidateAnswer */)
 		c.JSON(http.StatusOK, quiz)
 	})
 
-	// Authorized group (uses gin.BasicAuth() middleware)
-	// Same than:
-	// authorized := r.Group("/")
-	// authorized.Use(gin.BasicAuth(gin.Credentials{
-	//	  "foo":  "bar",
-	//	  "manu": "123",
-	// //}))
+	r.POST("submit/:quizId", func(c *gin.Context) {
+		quizId := c.Params.ByName("quizId")
+		originalQuiz := GetQuiz(quizId, false /* invalidateAnswer */)
+
+		var submittedQuiz Quiz
+
+		// Call BindJSON to bind the received JSON to
+		// newAlbum.
+		if err := c.BindJSON(&submittedQuiz); err != nil {
+			// TODO: replace fmt with log.fatal here and elsewhere
+			fmt.Println("ERROR WHILE PARSING QUIZ DURING CREATION")
+			return
+		}
+
+		/*
+			TODO:
+				1. tell which questions were answered correctly
+				2. Persist the data about submission
+		*/
+		score := 0
+		for i := 0; i < len(originalQuiz.Questions); i++ {
+			if originalQuiz.Questions[i].Answer == submittedQuiz.Questions[i].Answer {
+				score++
+			}
+		}
+
+		c.String(http.StatusOK, string(score))
+	})
+
+	// r.POST
+
+	// /*
+	// 	Authorized group (uses gin.BasicAuth() middleware)
+	// 	Same than:
+	// 	authorized := r.Group("/")
+	// 	authorized.Use(gin.BasicAuth(gin.Credentials{
+	// 		"foo":  "bar",
+	// 		"manu": "123",
+	// 	}))
+	// */
 	// authorized := r.Group("/", gin.BasicAuth(gin.Accounts{
 	// 	"foo":  "bar", // user:foo password:bar
 	// 	"manu": "123", // user:manu password:123
@@ -80,7 +110,7 @@ func setupRouter() *gin.Engine {
 	//   	-d '{"value":"bar"}'
 	// */
 	// authorized.POST("admin", func(c *gin.Context) {
-	// 	// user := c.MustGet(gin.AuthUserKey).(string)
+	// 	user := c.MustGet(gin.AuthUserKey).(string)
 
 	// 	// Parse JSON
 	// 	var json struct {
@@ -88,7 +118,7 @@ func setupRouter() *gin.Engine {
 	// 	}
 
 	// 	if c.Bind(&json) == nil {
-	// 		// db[user] = json.Value
+	// 		db[user] = json.Value
 	// 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	// 	}
 	// })
@@ -98,6 +128,9 @@ func setupRouter() *gin.Engine {
 
 func main() {
 	r := setupRouter()
+
 	// Listen and Server in 0.0.0.0:8080
-	r.Run(":8080")
+	// r.Run(":8080")
+
+	_ = r.RunTLS(":443", "cert.pem", "key.pem")
 }
