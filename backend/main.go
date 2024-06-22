@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -61,7 +62,7 @@ func setupRouter() *gin.Engine {
 		c.JSON(http.StatusOK, quiz)
 	})
 
-	r.POST("submit/:quizId", func(c *gin.Context) {
+	r.POST("/submit/:quizId", func(c *gin.Context) {
 		quizId := c.Params.ByName("quizId")
 		originalQuiz := GetQuiz(quizId, false /* invalidateAnswer */)
 
@@ -87,7 +88,7 @@ func setupRouter() *gin.Engine {
 			}
 		}
 
-		c.String(http.StatusOK, string(score))
+		c.String(http.StatusOK, strconv.Itoa(score))
 	})
 
 	r.POST("/createUser", func(c *gin.Context) {
