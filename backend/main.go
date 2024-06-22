@@ -104,6 +104,7 @@ func setupRouter() *gin.Engine {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 		if err != nil {
 			c.String(http.StatusBadRequest, err.Error())
+			return
 		}
 
 		user.Password = string(hashedPassword)
@@ -133,24 +134,30 @@ func setupRouter() *gin.Engine {
 		existingUser := GetUser(user.Email)
 		if existingUser == nil {
 			c.String(http.StatusBadRequest, "Error login in. Please check the credentials.")
+			return
 		}
 		hashedPassword := existingUser.Password
 
 		err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 		if err != nil {
 			c.String(http.StatusBadRequest, "Error login in. Please check the credentials.")
+			return
 		}
 
 		token, err := CreateToken(existingUser.Email)
 
 		if err != nil {
 			c.String(http.StatusUnauthorized, err.Error())
+			return
 		}
 
 		// TODO: use JWT for keeping user logged in.
 		c.String(http.StatusOK, token)
 	})
 
+	/*
+		NOTE TO SELF: keeping it for studying later (maybe). Code from documentation
+	*/
 	// /*
 	// 	Authorized group (uses gin.BasicAuth() middleware)
 	// 	Same than:
