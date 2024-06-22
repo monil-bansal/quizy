@@ -11,17 +11,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-type TableBasics struct {
-	DynamoDbClient *dynamodb.DynamoDB
-	TableName      string
-}
+var (
+	// IS CLASSED AT THE START OF THE PROGRAM
+	dbClient = newclient()
 
-// IS CLASSED AT THE START OF THE PROGRAM
-var dbClient = newclient()
-
-// TODO: study if we should create 2 different db clients or use the same client for different tables. (both will work but want to know what are the pros and cons).
-var quizTableName = "quizy_quiz"
-var userTableName = "quizy_user"
+	// TODO: study if we should create 2 different db clients or use the same client for different tables. (both will work but want to know what are the pros and cons).
+	quizTableName = "quizy_quiz"
+	userTableName = "quizy_user"
+)
 
 func newclient() *dynamodb.DynamoDB {
 	fmt.Println("CREATING DB CLIENT")
@@ -131,7 +128,7 @@ func GetQuiz(quizId string, invalidateAnswer bool) Quiz {
 
 }
 
-func GetUser(userId string) User {
+func GetUser(userId string) *User {
 	result, err := dbClient.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(userTableName),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -144,8 +141,7 @@ func GetUser(userId string) User {
 		log.Fatalf("Got error calling GetItem in GetUser: %s", err)
 	}
 	if result.Item == nil {
-		msg := "Could not find '" + userId + "'"
-		log.Fatalln(msg)
+		return nil
 	}
 
 	user := User{}
@@ -155,7 +151,7 @@ func GetUser(userId string) User {
 		log.Fatalf("Failed to unmarshal User Record, %v", err)
 	}
 
-	return user
+	return &user
 }
 
 func removeAnswer(quiz Quiz) Quiz {

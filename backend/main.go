@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	. "quizy/data"
+	. "quizy/login"
 	. "quizy/model"
 )
 
@@ -130,6 +131,9 @@ func setupRouter() *gin.Engine {
 		password := user.Password
 
 		existingUser := GetUser(user.Email)
+		if existingUser == nil {
+			c.String(http.StatusBadRequest, "Error login in. Please check the credentials.")
+		}
 		hashedPassword := existingUser.Password
 
 		err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
@@ -137,8 +141,14 @@ func setupRouter() *gin.Engine {
 			c.String(http.StatusBadRequest, "Error login in. Please check the credentials.")
 		}
 
+		token, err := CreateToken(existingUser.Email)
+
+		if err != nil {
+			c.String(http.StatusUnauthorized, err.Error())
+		}
+
 		// TODO: use JWT for keeping user logged in.
-		c.String(http.StatusOK, "user loged in")
+		c.String(http.StatusOK, token)
 	})
 
 	// /*
