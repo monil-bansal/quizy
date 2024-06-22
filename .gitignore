@@ -1,3 +1,6 @@
 secret.txt
 rootkey.csv
 backend/tmp/*
+details.md
+cert.pem
+key.pem

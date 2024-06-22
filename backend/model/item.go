@@ -20,3 +20,9 @@ type UserSumission struct {
 	Title     string     `json:"title" dynamodbav:"title"` // have to store it twice or might have to read it from db : extra storeage is preferable over extra db read but then storage will be forever and db read only when submitting/accessing submission
 	Questions []Question `json:"questions" dynamodbav:"questions"`
 }
+
+type User struct {
+	Email    string `json:"email" dynamodbav:"userId"`
+	Password string `json:"password" dynamodbav:"password"`
+	Name     string `json:"name" dynamodbav:"name"`
+}

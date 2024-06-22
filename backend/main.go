@@ -6,10 +6,19 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 
 	. "quizy/data"
 	. "quizy/model"
 )
+
+func getRandomId() string {
+	id, er := uuid.NewRandom()
+	if er != nil {
+		panic(er)
+	}
+	return id.String()
+}
 
 func setupRouter() *gin.Engine {
 	// Disable Console Color
@@ -32,11 +41,7 @@ func setupRouter() *gin.Engine {
 			fmt.Println("ERROR WHILE PARSING QUIZ DURING CREATION")
 			return
 		}
-		id, er := uuid.NewRandom()
-		if er != nil {
-			panic(er)
-		}
-		quiz.QuizId = id.String()
+		quiz.QuizId = getRandomId()
 
 		AddQuiz(quiz)
 		c.String(http.StatusOK, "ok")
@@ -84,7 +89,57 @@ func setupRouter() *gin.Engine {
 		c.String(http.StatusOK, string(score))
 	})
 
-	// r.POST
+	r.POST("/createUser", func(c *gin.Context) {
+		var user User
+
+		// Call BindJSON to bind the received JSON to
+		// newAlbum.
+		if err := c.BindJSON(&user); err != nil {
+			fmt.Println("ERROR WHILE PARSING QUIZ DURING CREATION")
+			return
+		}
+
+		password := user.Password
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
+		if err != nil {
+			c.String(http.StatusBadRequest, err.Error())
+		}
+
+		user.Password = string(hashedPassword)
+
+		// TODO: Check if user already exists if needed -> if dynamoDb already doesn't handle it as it is also the primary key.
+		// curUser := GetUser(user.Email)
+
+		// if curUser != nil {
+		// 	c.String(http.StatusConflict, "user with email already exists")
+		// }
+
+		AddUser(user)
+	})
+
+	r.POST("/login", func(c *gin.Context) {
+		var user User
+
+		// Call BindJSON to bind the received JSON to
+		// newAlbum.
+		if err := c.BindJSON(&user); err != nil {
+			fmt.Println("ERROR WHILE PARSING QUIZ DURING CREATION")
+			return
+		}
+
+		password := user.Password
+
+		existingUser := GetUser(user.Email)
+		hashedPassword := existingUser.Password
+
+		err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+		if err != nil {
+			c.String(http.StatusBadRequest, "Error login in. Please check the credentials.")
+		}
+
+		// TODO: use JWT for keeping user logged in.
+		c.String(http.StatusOK, "user loged in")
+	})
 
 	// /*
 	// 	Authorized group (uses gin.BasicAuth() middleware)
