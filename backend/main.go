@@ -46,17 +46,23 @@ func setupRouter() *gin.Engine {
 		quiz.QuizId = getRandomId()
 
 		AddQuiz(quiz)
+
 		c.String(http.StatusOK, "ok")
 	})
 
 	// Get quiz list
 	r.GET("/quiz", func(c *gin.Context) {
 		quizList := GetAllQuiz(true /* invalidateAnswer */)
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With,user-agent")
+		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+
 		c.JSON(http.StatusOK, quizList)
 	})
 
 	// Get user value
 	r.GET("/quiz/:quizId", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
+
 		quizId := c.Params.ByName("quizId")
 		quiz := GetQuiz(quizId, true /* invalidateAnswer */)
 		c.JSON(http.StatusOK, quiz)
@@ -201,9 +207,6 @@ func setupRouter() *gin.Engine {
 
 func main() {
 	r := setupRouter()
-
-	// Listen and Server in 0.0.0.0:8080
-	// r.Run(":8080")
 
 	_ = r.RunTLS(":443", "cert.pem", "key.pem")
 }
