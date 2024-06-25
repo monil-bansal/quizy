@@ -1,28 +1,21 @@
 function Question(props) {
-    var questionId = props.questionId
-    return (
-      <div className="Question">
-        <fieldset>
-          <legend>Question:</legend>
-          
-          <div>
-            <input type="radio" id={"huey" + questionId} name={questionId} value={"huey" + questionId} />
-            <label for={"huey" + questionId}>Huey</label>
-          </div>
-
-          <div>
-            <input type="radio" id={"dewey" + questionId} name={questionId} value={"dewey" + questionId} />
-            <label for={"dewey" + questionId}>Dewey</label>
-          </div>
-
-          <div>
-            <input type="radio" id={"louie" + questionId} name={questionId} value={"louie" + questionId} />
-            <label for={"louie" + questionId}>Louie</label>
-          </div>
-        </fieldset>
-      </div>
-    );
+  var questionId = props.questionId
+  let options = [];
+  for (let i = 0; i < props.options.length; i++) {
+    let id = questionId*100 + i; // generating unique id in a quiz
+    options.push(<div key={i}>
+      <input type="radio" id={id} name={questionId} value={id} />
+      <label htmlFor={id}>{props.options[i]}</label>
+    </div>)
   }
-  
-  export default Question;
-  
+  return (
+    <div className="Question">
+      <fieldset>
+        <legend>{props.question}</legend>
+        {options}
+      </fieldset>
+    </div>
+  );
+}
+
+export default Question;
