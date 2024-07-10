@@ -53,7 +53,6 @@ func setupRouter() *gin.Engine {
 	// Get quiz list
 	r.GET("/quiz", func(c *gin.Context) {
 		quizList := GetAllQuiz(true /* invalidateAnswer */)
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With,user-agent")
 		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 
 		c.JSON(http.StatusOK, quizList)
@@ -93,6 +92,7 @@ func setupRouter() *gin.Engine {
 				score++
 			}
 		}
+		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 
 		c.String(http.StatusOK, strconv.Itoa(score))
 	})

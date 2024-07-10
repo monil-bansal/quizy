@@ -108,12 +108,13 @@ func GetQuiz(quizId string, invalidateAnswer bool) Quiz {
 	if err != nil {
 		log.Fatalf("Got error calling GetItem in GetQuiz: %s", err)
 	}
-	if result.Item == nil {
-		msg := "Could not find '" + quizId + "'"
-		log.Fatalln(msg)
-	}
 
 	quiz := Quiz{}
+	if result.Item == nil {
+		msg := "Could not find '" + quizId + "'"
+		fmt.Errorf(msg)
+		return quiz
+	}
 
 	err = dynamodbattribute.UnmarshalMap(result.Item, &quiz)
 	if err != nil {
